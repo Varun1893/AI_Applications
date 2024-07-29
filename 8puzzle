@@ -1,0 +1,84 @@
+import heapq
+
+class PuzzleState:
+    def __init__(self, board, empty_pos, moves=0, previous=None):
+        self.board = board
+        self.empty_pos = empty_pos
+        self.moves = moves
+        self.previous = previous
+
+    def __lt__(self, other):
+        return self.priority() < other.priority()
+
+    def priority(self):
+        # Manhattan distance as the heuristic
+        goal = [1, 2, 3, 4, 5, 6, 7, 8, 0]
+        distance = 0
+        for i in range(9):
+            if self.board[i] == 0:
+                continue
+            goal_pos = goal.index(self.board[i])
+            current_pos = i
+            distance += abs(goal_pos // 3 - current_pos // 3) + abs(goal_pos % 3 - current_pos % 3)
+        return distance + self.moves
+
+    def is_goal(self):
+        return self.board == [1, 2, 3, 4, 5, 6, 7, 8, 0]
+
+    def get_neighbors(self):
+        neighbors = []
+        directions = {'up': -3, 'down': 3, 'left': -1, 'right': 1}
+        for direction, shift in directions.items():
+            new_pos = self.empty_pos + shift
+            if direction == 'up' and self.empty_pos < 3:
+                continue
+            if direction == 'down' and self.empty_pos > 5:
+                continue
+            if direction == 'left' and self.empty_pos % 3 == 0:
+                continue
+            if direction == 'right' and self.empty_pos % 3 == 2:
+                continue
+
+            new_board = self.board[:]
+            new_board[self.empty_pos], new_board[new_pos] = new_board[new_pos], new_board[self.empty_pos]
+            neighbors.append(PuzzleState(new_board, new_pos, self.moves + 1, self))
+        return neighbors
+
+def solve_puzzle(start_board):
+    empty_pos = start_board.index(0)
+    start_state = PuzzleState(start_board, empty_pos)
+    heap = []
+    heapq.heappush(heap, start_state)
+    visited = set()
+
+    while heap:
+        current_state = heapq.heappop(heap)
+        if current_state.is_goal():
+            return current_state
+
+        visited.add(tuple(current_state.board))
+        for neighbor in current_state.get_neighbors():
+            if tuple(neighbor.board) not in visited:
+                heapq.heappush(heap, neighbor)
+
+    return None
+
+def print_solution(solution):
+    path = []
+    state = solution
+    while state:
+        path.append(state.board)
+        state = state.previous
+    path.reverse()
+    for step in path:
+        for i in range(0, 9, 3):
+            print(step[i:i+3])
+        print()
+
+# Example usage
+start_board = [1, 2, 3, 4, 5, 6, 0, 7, 8]
+solution = solve_puzzle(start_board)
+if solution:
+    print_solution(solution)
+else:
+    print("No solution found")
