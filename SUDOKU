@@ -1,0 +1,49 @@
+from typing import List
+
+class Solution:
+    def solveSudoku(self, board: List[List[str]]) -> None:
+        rows = [set() for _ in range(9)]
+        cols = [set() for _ in range(9)]
+        boxes = [set() for _ in range(9)]
+        empty_cells = []
+
+        # Initialize the sets and record empty cells
+        for r in range(9):
+            for c in range(9):
+                val = board[r][c]
+                if val != '.':
+                    rows[r].add(val)
+                    cols[c].add(val)
+                    boxes[r // 3 * 3 + c // 3].add(val)
+                else:
+                    empty_cells.append((r, c))
+        
+        def is_valid(r, c, num):
+            box_index = r // 3 * 3 + c // 3
+            return num not in rows[r] and num not in cols[c] and num not in boxes[box_index]
+
+        def place_number(r, c, num):
+            board[r][c] = num
+            rows[r].add(num)
+            cols[c].add(num)
+            boxes[r // 3 * 3 + c // 3].add(num)
+
+        def remove_number(r, c, num):
+            board[r][c] = '.'
+            rows[r].remove(num)
+            cols[c].remove(num)
+            boxes[r // 3 * 3 + c // 3].remove(num)
+
+        def solve(index):
+            if index == len(empty_cells):
+                return True
+            r, c = empty_cells[index]
+            for num in '123456789':
+                if is_valid(r, c, num):
+                    place_number(r, c, num)
+                    if solve(index + 1):
+                        return True
+                    remove_number(r, c, num)
+            return False
+        
+        solve(0)
