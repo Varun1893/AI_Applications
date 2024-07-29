@@ -1,0 +1,65 @@
+import random
+
+class VacuumWorld:
+    def __init__(self, size=5):
+        self.size = size
+        self.board = [[' ' for _ in range(size)] for _ in range(size)]
+        self.agent_pos = (0, 0)
+        self.board[0][0] = 'A'
+        self.place_dirt()
+
+    def place_dirt(self):
+        num_dirt = random.randint(1, self.size * self.size // 2)
+        for _ in range(num_dirt):
+            while True:
+                x, y = random.randint(0, self.size - 1), random.randint(0, self.size - 1)
+                if self.board[x][y] == ' ':
+                    self.board[x][y] = 'D'
+                    break
+
+    def display_board(self):
+        for row in self.board:
+            print(' '.join(row))
+        print()
+
+    def move_agent(self, direction):
+        x, y = self.agent_pos
+        if direction == 'up' and x > 0:
+            new_pos = (x - 1, y)
+        elif direction == 'down' and x < self.size - 1:
+            new_pos = (x + 1, y)
+        elif direction == 'left' and y > 0:
+            new_pos = (x, y - 1)
+        elif direction == 'right' and y < self.size - 1:
+            new_pos = (x, y + 1)
+        else:
+            new_pos = self.agent_pos
+
+        self.update_agent_position(new_pos)
+
+    def update_agent_position(self, new_pos):
+        x, y = self.agent_pos
+        new_x, new_y = new_pos
+
+        self.board[x][y] = ' '
+        self.agent_pos = new_pos
+
+        if self.board[new_x][new_y] == 'D':
+            print("Cleaned dirt at position ({}, {})".format(new_x, new_y))
+            self.board[new_x][new_y] = 'A'
+        else:
+            self.board[new_x][new_y] = 'A'
+
+# Example usage
+game = VacuumWorld()
+game.display_board()
+
+# Move the agent around
+game.move_agent('right')
+game.display_board()
+game.move_agent('down')
+game.display_board()
+game.move_agent('down')
+game.display_board()
+game.move_agent('left')
+game.display_board()
